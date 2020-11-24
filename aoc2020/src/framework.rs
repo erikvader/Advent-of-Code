@@ -3,7 +3,26 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 pub type AnyError = Box<dyn std::error::Error>;
-pub type AOCSolve = fn(input: &str) -> Result<String, AnyError>;
+pub type AOCPart = fn(input: &str) -> Result<String, AnyError>;
+pub type AOCSolve = (AOCPart, AOCPart);
+
+pub enum Part {
+    Part1,
+    Part2,
+}
+
+impl Part {
+    fn prob_name(&self) -> &'static str {
+        match self {
+            Part::Part1 => "part1",
+            Part::Part2 => "part2",
+        }
+    }
+
+    fn is_test(&self, fname: &str) -> bool {
+        fname.starts_with(self.prob_name()) && fname.find("test").is_some()
+    }
+}
 
 macro_rules! aoc_import {
     ($(mod $i:ident);+ ;) => {
@@ -14,7 +33,7 @@ macro_rules! aoc_import {
         fn fetch_problem(day: &str) -> Option<$crate::framework::AOCSolve> {
             match day {
                 $(
-                    stringify!($i) => Some($i::sol::solve)
+                    stringify!($i) => Some(($i::sol::part1, $i::sol::part2))
                 ),+ ,
                 _ => None
             }
@@ -22,23 +41,29 @@ macro_rules! aoc_import {
     }
 }
 
-pub fn execute_test_cases(solver: AOCSolve, dir: &Path) -> Result<(), AnyError> {
+pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> Result<(), AnyError> {
     let mut tests = Vec::new();
     let mut prob = None;
     for f in fs::read_dir(dir)? {
         let ff = if let Ok(f) = f { f } else { continue };
 
         let fname = ff.file_name();
-        if fname == "prob" {
+        if fname == part.prob_name() {
             prob = Some(ff.path());
         }
 
         if let Some(s) = fname.as_os_str().to_str() {
-            if s.starts_with("test") {
+            if part.is_test(s) {
                 tests.push(ff.path());
             }
         }
     }
+
+    if tests.is_empty() && prob.is_none() {
+        return Err("found no instances to run".into());
+    }
+
+    tests.sort_unstable();
 
     for t in tests.into_iter() {
         let fname = t
@@ -63,7 +88,7 @@ pub fn execute_test_cases(solver: AOCSolve, dir: &Path) -> Result<(), AnyError> 
             println!("{}: {}", "Error".red(), fname);
             println!("expected: {}", last_line);
             println!("got: {}", solved);
-            return Ok(())
+            return Ok(());
         }
     }
 
