@@ -15,6 +15,7 @@ pub use parsers::CSV;
 
 aoc_import! {
     mod day0;
+    //<day-marker>
 }
 
 fn fake_main() -> anyhow::Result<()> {
