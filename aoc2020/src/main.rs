@@ -11,7 +11,6 @@ use framework::{
     execute_test_cases, find_src_dir,
     Part::{Part1, Part2},
 };
-pub use parsers::CSV;
 
 aoc_import! {
     mod day0;
