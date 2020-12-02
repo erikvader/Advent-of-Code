@@ -1,4 +1,5 @@
 use colored::*;
+use anyhow::{self, Context};
 use std::env;
 use std::path::Path;
 
@@ -6,7 +7,6 @@ use std::path::Path;
 mod framework;
 mod parsers;
 
-pub use framework::AnyError;
 use framework::{
     execute_test_cases, find_src_dir,
     Part::{Part1, Part2},
@@ -17,20 +17,22 @@ aoc_import! {
     mod day1;
 }
 
-fn fake_main() -> Result<(), AnyError> {
+fn fake_main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 3 {
-        return Err("I need a day and a part as arguments".into());
+        anyhow::bail!("I need a day and a part as arguments");
     }
 
     let dayname = String::from("day") + &args[1];
     let part = &args[2];
-    let prob = fetch_problem(&dayname).ok_or(format!(
-        "\"{}\" is not a valid day or it is not created yet",
-        dayname
-    ))?;
+    let prob = fetch_problem(&dayname).with_context(|| {
+        format!(
+            "\"{}\" is not a valid day or it is not created yet",
+            dayname
+        )
+    })?;
 
-    let mut srcdir = find_src_dir(Path::new(&args[0]))?;
+    let mut srcdir = find_src_dir(Path::new(&args[0])).context("can't find cargo src dir")?;
     srcdir.push(&dayname);
 
     if part == "1" {
@@ -38,17 +40,17 @@ fn fake_main() -> Result<(), AnyError> {
     } else if part == "2" {
         execute_test_cases(prob.1, Part2, &srcdir)?;
     } else {
-        return Err("Invalid part".into());
+        anyhow::bail!("Invalid part");
     }
 
     Ok(())
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let exit_code = match fake_main() {
         Ok(()) => 0,
         Err(e) => {
-            eprintln!("{}: {}", "Exception".red(), e);
+            eprintln!("{}: {:?}", "Exception".red(), e);
             1
         }
     };
