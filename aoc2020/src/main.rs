@@ -14,7 +14,7 @@ use framework::{
 pub use parsers::CSV;
 
 aoc_import! {
-    mod day1;
+    mod day0;
 }
 
 fn fake_main() -> anyhow::Result<()> {
