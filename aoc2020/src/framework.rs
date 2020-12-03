@@ -48,7 +48,7 @@ pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Re
         let ff = if let Ok(f) = f { f } else { continue };
 
         let fname = ff.file_name();
-        if fname == part.prob_name() {
+        if fname == "input" {
             prob = Some(ff.path());
         }
 
