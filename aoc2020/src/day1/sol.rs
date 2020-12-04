@@ -1,8 +1,8 @@
+use crate::parsers as P;
 use anyhow;
 
 pub fn part1(input: &str) -> anyhow::Result<String> {
-    let inp: crate::parsers::LSV<i32> = input.parse()?;
-    let numbers = inp.0;
+    let numbers: Vec<i32> = P::list_of_parseable_lines::<i32, _>(input)?;
 
     for i in 0..numbers.len() {
         for j in i..numbers.len() {
@@ -15,8 +15,7 @@ pub fn part1(input: &str) -> anyhow::Result<String> {
 }
 
 pub fn part2(input: &str) -> anyhow::Result<String> {
-    let inp: crate::parsers::LSV<i32> = input.parse()?;
-    let numbers = inp.0;
+    let numbers: Vec<i32> = P::list_of_parseable_lines(input)?;
 
     for i in 0..numbers.len() {
         for j in i..numbers.len() {

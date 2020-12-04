@@ -9,3 +9,6 @@ edition = "2018"
 [dependencies]
 colored = "2"
 anyhow = "1"
+nom = {version = "6", features = ["regexp"]}
+regex = "1"
+thiserror = "1"
