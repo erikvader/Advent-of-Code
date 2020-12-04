@@ -13,7 +13,6 @@ use framework::{
 };
 
 aoc_import! {
-    mod day0;
     mod day1;
     //<day-marker>
 }
