@@ -1,3 +1,4 @@
+pub use crate::list_of_regex_lines_parsed;
 #[allow(unused_imports)]
 use nom::{
     bytes::complete::tag,
@@ -9,6 +10,8 @@ use nom::{
     Finish, IResult,
 };
 use regex::Regex;
+use std::convert::TryFrom;
+use std::str::FromStr;
 
 // list of parseable //////////////////////////////////////////////////////////
 
@@ -96,3 +99,80 @@ pub fn list_of_regex_lines<'a>(s: &'a str, regex: &str) -> Result<Vec<Vec<&'a st
         lines
     })
 }
+
+#[macro_export]
+macro_rules! list_of_regex_lines_parsed {
+    ($inp:ident, $string:expr) => {{
+        use std::convert::TryInto;
+        $crate::parsers::list_of_regex_lines($inp, $string)?
+            .into_iter()
+            .map(|x| $crate::parsers::VecParse(x).try_into())
+            .collect::<Result<Vec<_>, _>>()?
+    }};
+}
+
+// vec to tuple ///////////////////////////////////////////////////////////////
+
+#[derive(Debug, thiserror::Error)]
+pub enum VecParseError {
+    #[error("Vec is of wrong length")]
+    WrongLen,
+    #[error("str at position {ele} failed with '{error}'")]
+    ParseError {
+        ele: usize,
+        error: Box<dyn std::error::Error + Send + Sync + 'static>,
+    },
+}
+
+pub struct VecParse<'a>(pub Vec<&'a str>);
+
+macro_rules! args_to_tuple {
+    ($name:ident) => {
+        ($name ,)
+    };
+    ($($name:ident)+) => {
+        ($($name),+)
+    };
+}
+
+macro_rules! vec_parse_impls {
+    ($($name:ident $ename:ident)+) => {
+        impl<'a, $($name, $ename),+> TryFrom<VecParse<'a>> for args_to_tuple!($($name)+)
+        where $($name: FromStr<Err = $ename>),+ ,
+              $($ename: std::error::Error + Send + Sync + 'static),+
+        {
+            type Error = VecParseError;
+            #[allow(unused_assignments, non_snake_case)]
+            fn try_from(value: VecParse<'a>) -> Result<Self, Self::Error> {
+                let mut i = 0;
+                $(
+                    if i >= value.0.len() {
+                        return Err(VecParseError::WrongLen);
+                    }
+
+                    let $name = match value.0[i].parse() {
+                        Ok(x) => x,
+                        Err(e) => {
+                            return Err(VecParseError::ParseError {
+                                ele: i,
+                                error: Box::new(e),
+                            })
+                        }
+                    };
+                    i += 1;
+                )+
+
+                Ok(args_to_tuple!($($name)+))
+            }
+        }
+    };
+}
+
+vec_parse_impls! {A E1}
+vec_parse_impls! {A E1 B E2}
+vec_parse_impls! {A E1 B E2 C E3}
+vec_parse_impls! {A E1 B E2 C E3 D E4}
+vec_parse_impls! {A E1 B E2 C E3 D E4 E E5}
+vec_parse_impls! {A E1 B E2 C E3 D E4 E E5 F E6}
+vec_parse_impls! {A E1 B E2 C E3 D E4 E E5 F E6 G E7}
+vec_parse_impls! {A E1 B E2 C E3 D E4 E E5 F E6 G E7 H E8}
