@@ -1,4 +1,5 @@
 pub use crate::list_of_regex_lines_parsed;
+use grid::Grid;
 #[allow(unused_imports)]
 use nom::{
     bytes::complete::tag,
@@ -27,6 +28,8 @@ pub enum ParserError {
     },
     #[error(transparent)]
     Regex(#[from] regex::Error),
+    #[error("the input was empty")]
+    Empty,
 }
 
 impl ParserError {
@@ -109,6 +112,24 @@ macro_rules! list_of_regex_lines_parsed {
             .map(|x| $crate::parsers::VecParse(x).try_into())
             .collect::<Result<Vec<_>, _>>()?
     }};
+}
+
+// grid ///////////////////////////////////////////////////////////////////////
+
+pub fn char_grid(s: &str) -> Result<Grid<char>, ParserError> {
+    let mut flattened = Vec::new();
+    let mut cols = None;
+    for l in s.lines() {
+        cols = Some(l.len()); // TODO: check whether line lenghts are different
+        for c in l.chars() {
+            flattened.push(c);
+        }
+    }
+
+    if cols.is_none() {
+        return Err(ParserError::Empty);
+    }
+    Ok(Grid::from_vec(flattened, cols.unwrap()))
 }
 
 // vec to tuple ///////////////////////////////////////////////////////////////
