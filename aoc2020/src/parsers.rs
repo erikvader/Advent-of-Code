@@ -12,23 +12,18 @@ pub enum ParserError {
     Regex(#[from] regex::Error),
     #[error("the regex didn't match")]
     RegexNoMatch,
-    #[error("the input was empty or a capture group was None")]
-    Empty,
     #[error("a line failed to map because '{0}'")]
     MapError(Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 // list of parseable //////////////////////////////////////////////////////////
 
+#[allow(dead_code)]
 pub fn map_sep<'a, F, T, E>(lines: &'a str, sep: &str, f: F) -> Result<Vec<T>, ParserError>
 where
     F: Fn(&'a str) -> Result<T, E>,
     E: std::error::Error + Send + Sync + 'static,
 {
-    if lines.is_empty() {
-        return Err(ParserError::Empty);
-    }
-
     lines
         .trim_end()
         .split(sep)
@@ -37,6 +32,25 @@ where
         .map_err(|e| ParserError::MapError(Box::new(e)))
 }
 
+#[allow(dead_code)]
+pub fn map_lines<'a, F, T, E>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
+where
+    F: Fn(&'a str) -> Result<T, E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    map_sep(lines, "\n", f)
+}
+
+#[allow(dead_code)]
+pub fn map_paragraphs<'a, F, T, E>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
+where
+    F: Fn(&'a str) -> Result<T, E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    map_sep(lines, "\n\n", f)
+}
+
+#[allow(dead_code)]
 pub fn list_of_parseable<T, E>(s: &str, sep: &str) -> Result<Vec<T>, ParserError>
 where
     T: std::str::FromStr<Err = E>,
@@ -45,6 +59,7 @@ where
     map_sep(s, sep, |x| x.parse())
 }
 
+#[allow(dead_code)]
 pub fn list_of_parseable_lines<T, E>(s: &str) -> Result<Vec<T>, ParserError>
 where
     T: std::str::FromStr<Err = E>,
@@ -53,8 +68,35 @@ where
     list_of_parseable(s, "\n")
 }
 
+// safe maps //////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+pub fn map_sep_safe<'a, F, T>(lines: &'a str, sep: &str, f: F) -> Result<Vec<T>, ParserError>
+where
+    F: Fn(&'a str) -> T,
+{
+    map_sep::<_, _, std::convert::Infallible>(lines, sep, |x| Ok(f(x)))
+}
+
+#[allow(dead_code)]
+pub fn map_lines_safe<'a, F, T>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
+where
+    F: Fn(&'a str) -> T,
+{
+    map_sep_safe(lines, "\n", f)
+}
+
+#[allow(dead_code)]
+pub fn map_paragraphs_safe<'a, F, T>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
+where
+    F: Fn(&'a str) -> T,
+{
+    map_sep_safe(lines, "\n\n", f)
+}
+
 // list of regex //////////////////////////////////////////////////////////////
 
+#[allow(dead_code)]
 pub fn list_of_regex_lines<'a>(s: &'a str, regex: &str) -> Result<Vec<Vec<&'a str>>, ParserError> {
     let reg = Regex::new(&format!("(?m){}", regex))?;
 
@@ -83,6 +125,7 @@ macro_rules! list_of_regex_lines_parsed {
 
 // grid ///////////////////////////////////////////////////////////////////////
 
+#[allow(dead_code)]
 pub fn char_grid(s: &str) -> Result<Grid<char>, ParserError> {
     let mut flattened = Vec::new();
     let mut cols = None;
@@ -94,7 +137,7 @@ pub fn char_grid(s: &str) -> Result<Grid<char>, ParserError> {
     }
 
     if cols.is_none() {
-        return Err(ParserError::Empty);
+        return Ok(grid::grid![]);
     }
     Ok(Grid::from_vec(flattened, cols.unwrap()))
 }

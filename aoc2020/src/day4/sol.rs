@@ -1,24 +1,17 @@
+use crate::parsers as P;
 use anyhow;
 use std::collections::HashMap;
 
-fn parapgraphify(input: &str) -> Vec<&str> {
-    input.split("\n\n").collect()
-}
-
-fn hashmapify<'a>(records: &[&'a str]) -> Vec<HashMap<&'a str, &'a str>> {
-    records
-        .iter()
-        .map(|l| {
-            l.split_whitespace()
-                .map(|kv| {
-                    kv.find(":")
-                        .map(|i| {
-                            let (k, v) = kv.split_at(i);
-                            (k, &v[1..])
-                        })
-                        .unwrap()
+fn hashmapify<'a>(record: &'a str) -> HashMap<&'a str, &'a str> {
+    record
+        .split_whitespace()
+        .map(|kv| {
+            kv.find(":")
+                .map(|i| {
+                    let (k, v) = kv.split_at(i);
+                    (k, &v[1..])
                 })
-                .collect()
+                .unwrap()
         })
         .collect()
 }
@@ -31,7 +24,7 @@ fn remove_invalid(records: &mut Vec<HashMap<&str, &str>>) {
 }
 
 pub fn part1(input: &str) -> anyhow::Result<String> {
-    let mut records = hashmapify(&parapgraphify(input));
+    let mut records = P::map_paragraphs_safe(input, hashmapify)?;
 
     remove_invalid(&mut records);
 
@@ -46,7 +39,7 @@ fn test_num(n: &str, lb: i32, ub: i32) -> bool {
 }
 
 pub fn part2(input: &str) -> anyhow::Result<String> {
-    let mut records = hashmapify(&parapgraphify(input));
+    let mut records = P::map_paragraphs_safe(input, hashmapify)?;
     remove_invalid(&mut records);
 
     let count = records
