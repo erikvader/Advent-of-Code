@@ -1,5 +1,5 @@
-use colored::*;
 use anyhow::{self, Context};
+use colored::*;
 use std::env;
 use std::path::Path;
 

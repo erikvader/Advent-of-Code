@@ -22,6 +22,10 @@ impl Part {
     fn is_test(&self, fname: &str) -> bool {
         fname.starts_with(self.prob_name()) && fname.find("test").is_some()
     }
+
+    fn is_solution(&self, fname: &str) -> bool {
+        fname.starts_with(self.prob_name()) && fname.find("solution").is_some()
+    }
 }
 
 macro_rules! aoc_import {
@@ -41,9 +45,14 @@ macro_rules! aoc_import {
     }
 }
 
-pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Result<()> {
+fn find_instance_files(
+    part: Part,
+    dir: &Path,
+) -> anyhow::Result<(Vec<PathBuf>, Option<PathBuf>, Option<PathBuf>)> {
     let mut tests = Vec::new();
     let mut prob = None;
+    let mut solution = None;
+
     for f in fs::read_dir(dir).with_context(|| format!("couldn't read folder: {:?}", dir))? {
         let ff = if let Ok(f) = f { f } else { continue };
 
@@ -57,6 +66,12 @@ pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Re
                 tests.push(ff.path());
             }
         }
+
+        if let Some(s) = fname.as_os_str().to_str() {
+            if part.is_solution(s) {
+                solution = Some(ff.path());
+            }
+        }
     }
 
     if tests.is_empty() && prob.is_none() {
@@ -64,6 +79,12 @@ pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Re
     }
 
     tests.sort_unstable();
+
+    Ok((tests, prob, solution))
+}
+
+pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Result<()> {
+    let (tests, prob, solution) = find_instance_files(part, dir)?;
 
     for t in tests.into_iter() {
         let fname = t
@@ -95,7 +116,21 @@ pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Re
 
     if let Some(p) = prob {
         let cont = fs::read_to_string(&p).context("couldn't read problem file")?;
-        println!("{}: {}", "Answer".yellow(), solver(cont.trim_end()).context("solver error")?);
+        let ans = solver(cont.trim_end()).context("solver error")?;
+
+        println!("{}: {}", "Answer".yellow(), ans);
+
+        if let Some(p) = solution {
+            let sol = fs::read_to_string(&p).context("couldn't read solution file")?;
+            println!(
+                "The answer is {}",
+                if sol.trim_end() == ans {
+                    "correct".green()
+                } else {
+                    "wrong".red()
+                }
+            );
+        }
     }
 
     Ok(())
