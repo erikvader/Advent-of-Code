@@ -1,6 +1,7 @@
 pub use crate::list_of_regex_lines_parsed;
 use grid::Grid;
 use regex::Regex;
+use std::convert::Infallible;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -75,7 +76,7 @@ pub fn map_sep_safe<'a, F, T>(lines: &'a str, sep: &str, f: F) -> Result<Vec<T>,
 where
     F: Fn(&'a str) -> T,
 {
-    map_sep::<_, _, std::convert::Infallible>(lines, sep, |x| Ok(f(x)))
+    map_sep::<_, _, Infallible>(lines, sep, |x| Ok(f(x)))
 }
 
 #[allow(dead_code)]
@@ -99,16 +100,38 @@ where
 #[allow(dead_code)]
 pub fn list_of_regex_lines<'a>(s: &'a str, regex: &str) -> Result<Vec<Vec<&'a str>>, ParserError> {
     let reg = Regex::new(&format!("(?m){}", regex))?;
+    list_of_regex_sep::<_, _, Infallible>(s, "\n", &reg, |x| Ok(x))
+}
 
-    map_sep(s, "\n", |l| {
+// TODO: en variant som kör en regex om och om igen och ger tillbaka resultatet utav det
+
+#[allow(dead_code)]
+pub fn list_of_regex_sep<'a, T, F, E>(
+    s: &'a str,
+    sep: &str,
+    reg: &Regex,
+    f: F,
+) -> Result<Vec<T>, ParserError>
+where
+    E: std::error::Error + Send + Sync + 'static,
+    F: Fn(Vec<&'a str>) -> Result<T, E>,
+{
+    map_sep(s, sep, |l| {
         reg.captures(l)
+            .ok_or(ParserError::RegexNoMatch)
             .and_then(|caps| {
-                caps.iter()
+                let groups = caps
+                    .iter()
                     .skip(1)
                     .map(|g| g.map(|g| g.as_str()))
-                    .collect::<Option<Vec<&'a str>>>()
+                    .collect::<Option<Vec<&'a str>>>();
+
+                if let Some(g) = groups {
+                    f(g).map_err(|e| ParserError::MapError(Box::new(e)))
+                } else {
+                    Err(ParserError::RegexNoMatch)
+                }
             })
-            .ok_or(ParserError::RegexNoMatch)
     })
 }
 
