@@ -2,6 +2,7 @@ use anyhow::{self, Context};
 use colored::*;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 pub type AOCPart = fn(input: &str) -> anyhow::Result<String>;
 pub type AOCSolve = (AOCPart, AOCPart);
@@ -116,9 +117,13 @@ pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Re
 
     if let Some(p) = prob {
         let cont = fs::read_to_string(&p).context("couldn't read problem file")?;
-        let ans = solver(cont.trim_end()).context("solver error")?;
+        let solver_input = cont.trim_end();
+
+        let (resans, t) = time_it(|| solver(solver_input));
+        let ans = resans.context("solver error")?;
 
         println!("{}: {}", "Answer".yellow(), ans);
+        println!("{}: {} ms", "Execution time".blue(), t.as_millis());
 
         if let Some(p) = solution {
             let sol = fs::read_to_string(&p).context("couldn't read solution file")?;
@@ -152,4 +157,14 @@ pub fn find_src_dir(cwd: &Path) -> anyhow::Result<PathBuf> {
     proj_root.push("src");
 
     Ok(proj_root)
+}
+
+pub fn time_it<F, T>(f: F) -> (T, Duration)
+where
+    F: FnOnce() -> T,
+{
+    let prev = Instant::now();
+    let res = f();
+    let dur = Instant::now().duration_since(prev);
+    (res, dur)
 }
