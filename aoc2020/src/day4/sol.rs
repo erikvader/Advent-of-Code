@@ -24,7 +24,7 @@ fn remove_invalid(records: &mut Vec<HashMap<&str, &str>>) {
 }
 
 pub fn part1(input: &str) -> anyhow::Result<String> {
-    let mut records = P::map_paragraphs_safe(input, hashmapify)?;
+    let mut records = P::paragraphs(input).map(hashmapify).collect();
 
     remove_invalid(&mut records);
 
@@ -39,7 +39,7 @@ fn test_num(n: &str, lb: i32, ub: i32) -> bool {
 }
 
 pub fn part2(input: &str) -> anyhow::Result<String> {
-    let mut records = P::map_paragraphs_safe(input, hashmapify)?;
+    let mut records = P::paragraphs(input).map(hashmapify).collect();
     remove_invalid(&mut records);
 
     let count = records

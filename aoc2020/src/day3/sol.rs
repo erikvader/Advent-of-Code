@@ -1,5 +1,5 @@
 use crate::parsers as P;
-use anyhow;
+use anyhow::{self, Context};
 use grid::Grid;
 
 fn count_trees(g: &Grid<char>, dr: usize, dc: usize) -> usize {
@@ -20,13 +20,13 @@ fn count_trees(g: &Grid<char>, dr: usize, dc: usize) -> usize {
 }
 
 pub fn part1(input: &str) -> anyhow::Result<String> {
-    let g = P::char_grid(input)?;
+    let g = P::char_grid(input).context("couldn't parse a grid")?;
 
     Ok(count_trees(&g, 1, 3).to_string())
 }
 
 pub fn part2(input: &str) -> anyhow::Result<String> {
-    let g = P::char_grid(input)?;
+    let g = P::char_grid(input).context("couldn't parse a grid")?;
 
     let res = count_trees(&g, 1, 1)
         * count_trees(&g, 1, 3)

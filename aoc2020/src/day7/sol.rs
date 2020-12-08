@@ -1,9 +1,6 @@
-use crate::parsers as P;
-use crate::parsers::VecParse;
 use anyhow;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
-use std::convert::TryInto;
 
 const TARGETBAG: &str = "shiny gold";
 
@@ -31,23 +28,36 @@ fn mark<'a>(
 }
 
 fn parse_tree(input: &str) -> anyhow::Result<HashMap<String, Vec<(u32, String)>>> {
-    let mainreg = Regex::new(r"(?m)^(.+?) bags contain (.+?)\.$").unwrap();
-    let depsreg = Regex::new(r" *([0-9]+) (.+?) bags?").unwrap();
+    let mainreg = Regex::new(r"(?m)^(.+?) bags contain (.+?)\.$")?;
+    let depsreg = Regex::new(r" *([0-9]+) (.+?) bags?")?;
 
-    let res = P::list_of_regex_sep::<_, _, P::ParserError>(input, "\n", &mainreg, |outerbag| {
-        let bag = outerbag[0].to_string();
-        let deps = if outerbag[1] == "no other bags" {
-            Vec::new()
-        } else {
-            P::list_of_regex_sep(outerbag[1], ",", &depsreg, |deps| {
-                let x: Result<(u32, String), _> = VecParse(deps).try_into();
-                x
-            })?
-        };
-        Ok((bag, deps))
-    })?;
+    let res: Option<HashMap<String, Vec<(u32, String)>>> = input
+        .lines()
+        .map(|l| {
+            mainreg.captures(l).and_then(|outerbag| {
+                let bag = outerbag[1].to_string();
+                let deps = if &outerbag[2] == "no other bags" {
+                    Some(Vec::new())
+                } else {
+                    outerbag[2]
+                        .split(",")
+                        .map(|d| {
+                            depsreg.captures(d).map(|deps| {
+                                (
+                                    deps[1].parse::<u32>().unwrap(),
+                                    deps[2].parse::<String>().unwrap(),
+                                )
+                            })
+                        })
+                        .collect()
+                };
 
-    Ok(res.into_iter().collect())
+                deps.map(|d| (bag, d))
+            })
+        })
+        .collect();
+
+    res.ok_or_else(|| anyhow::anyhow!("couldn't parse tree"))
 }
 
 pub fn part1(input: &str) -> anyhow::Result<String> {

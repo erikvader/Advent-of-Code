@@ -1,146 +1,43 @@
-pub use crate::list_of_regex_lines_parsed;
+pub use crate::parse_regex_lines;
 use grid::Grid;
 use regex::Regex;
-use std::convert::Infallible;
 use std::convert::TryFrom;
+use std::iter::Iterator;
 use std::str::FromStr;
 
-// parser error ///////////////////////////////////////////////////////////////
-
-#[derive(Debug, thiserror::Error)]
-pub enum ParserError {
-    #[error(transparent)]
-    Regex(#[from] regex::Error),
-    #[error("the regex didn't match")]
-    RegexNoMatch,
-    #[error("a line failed to map because '{0}'")]
-    MapError(Box<dyn std::error::Error + Send + Sync + 'static>),
+pub fn paragraphs<'a>(s: &'a str) -> impl Iterator<Item = &'a str> {
+    s.trim_end().split("\n\n")
 }
 
-// list of parseable //////////////////////////////////////////////////////////
-
-#[allow(dead_code)]
-pub fn map_sep<'a, F, T, E>(lines: &'a str, sep: &str, f: F) -> Result<Vec<T>, ParserError>
-where
-    F: Fn(&'a str) -> Result<T, E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
-    lines
-        .trim_end()
-        .split(sep)
-        .map(f)
-        .collect::<Result<_, _>>()
-        .map_err(|e| ParserError::MapError(Box::new(e)))
+pub fn regex_capture<'a>(input: &'a str, regex: &Regex) -> Vec<Option<&'a str>> {
+    regex.captures(input).map_or_else(
+        || Vec::new(),
+        |groupiter| {
+            groupiter
+                .iter()
+                .skip(1)
+                .map(|optmat| optmat.map(|mat| mat.as_str()))
+                .collect::<Vec<Option<&'a str>>>()
+        },
+    )
 }
 
-#[allow(dead_code)]
-pub fn map_lines<'a, F, T, E>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
-where
-    F: Fn(&'a str) -> Result<T, E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
-    map_sep(lines, "\n", f)
-}
-
-#[allow(dead_code)]
-pub fn map_paragraphs<'a, F, T, E>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
-where
-    F: Fn(&'a str) -> Result<T, E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
-    map_sep(lines, "\n\n", f)
-}
-
-#[allow(dead_code)]
-pub fn list_of_parseable<T, E>(s: &str, sep: &str) -> Result<Vec<T>, ParserError>
-where
-    T: std::str::FromStr<Err = E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
-    map_sep(s, sep, |x| x.parse())
-}
-
-#[allow(dead_code)]
-pub fn list_of_parseable_lines<T, E>(s: &str) -> Result<Vec<T>, ParserError>
-where
-    T: std::str::FromStr<Err = E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
-    list_of_parseable(s, "\n")
-}
-
-// safe maps //////////////////////////////////////////////////////////////////
-
-#[allow(dead_code)]
-pub fn map_sep_safe<'a, F, T>(lines: &'a str, sep: &str, f: F) -> Result<Vec<T>, ParserError>
-where
-    F: Fn(&'a str) -> T,
-{
-    map_sep::<_, _, Infallible>(lines, sep, |x| Ok(f(x)))
-}
-
-#[allow(dead_code)]
-pub fn map_lines_safe<'a, F, T>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
-where
-    F: Fn(&'a str) -> T,
-{
-    map_sep_safe(lines, "\n", f)
-}
-
-#[allow(dead_code)]
-pub fn map_paragraphs_safe<'a, F, T>(lines: &'a str, f: F) -> Result<Vec<T>, ParserError>
-where
-    F: Fn(&'a str) -> T,
-{
-    map_sep_safe(lines, "\n\n", f)
-}
-
-// list of regex //////////////////////////////////////////////////////////////
-
-#[allow(dead_code)]
-pub fn list_of_regex_lines<'a>(s: &'a str, regex: &str) -> Result<Vec<Vec<&'a str>>, ParserError> {
-    let reg = Regex::new(&format!("(?m){}", regex))?;
-    list_of_regex_sep::<_, _, Infallible>(s, "\n", &reg, |x| Ok(x))
-}
-
-// TODO: en variant som kör en regex om och om igen och ger tillbaka resultatet utav det
-
-#[allow(dead_code)]
-pub fn list_of_regex_sep<'a, T, F, E>(
-    s: &'a str,
-    sep: &str,
-    reg: &Regex,
-    f: F,
-) -> Result<Vec<T>, ParserError>
-where
-    E: std::error::Error + Send + Sync + 'static,
-    F: Fn(Vec<&'a str>) -> Result<T, E>,
-{
-    map_sep(s, sep, |l| {
-        reg.captures(l)
-            .ok_or(ParserError::RegexNoMatch)
-            .and_then(|caps| {
-                let groups = caps
-                    .iter()
-                    .skip(1)
-                    .map(|g| g.map(|g| g.as_str()))
-                    .collect::<Option<Vec<&'a str>>>();
-
-                if let Some(g) = groups {
-                    f(g).map_err(|e| ParserError::MapError(Box::new(e)))
-                } else {
-                    Err(ParserError::RegexNoMatch)
-                }
-            })
-    })
+pub fn regex_capture_require<'a>(input: &'a str, regex: &Regex) -> Vec<&'a str> {
+    regex_capture(input, regex)
+        .into_iter()
+        .map(|x| x.expect("capturing group is not allowed to be optional"))
+        .collect()
 }
 
 #[macro_export]
-macro_rules! list_of_regex_lines_parsed {
+macro_rules! parse_regex_lines {
     ($inp:ident, $string:expr) => {{
+        use regex::Regex;
         use std::convert::TryInto;
-        $crate::parsers::list_of_regex_lines($inp, $string)?
-            .into_iter()
+        let reg = Regex::new($string)?;
+
+        $inp.lines()
+            .map(|l| $crate::parsers::regex_capture_require(l, &reg))
             .map(|x| $crate::parsers::VecParse(x).try_into())
             .collect::<Result<Vec<_>, _>>()?
     }};
@@ -149,7 +46,7 @@ macro_rules! list_of_regex_lines_parsed {
 // grid ///////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-pub fn char_grid(s: &str) -> Result<Grid<char>, ParserError> {
+pub fn char_grid(s: &str) -> Option<Grid<char>> {
     let mut flattened = Vec::new();
     let mut cols = None;
     for l in s.lines() {
@@ -160,9 +57,9 @@ pub fn char_grid(s: &str) -> Result<Grid<char>, ParserError> {
     }
 
     if cols.is_none() {
-        return Ok(grid::grid![]);
+        return Some(grid::grid![]);
     }
-    Ok(Grid::from_vec(flattened, cols.unwrap()))
+    Some(Grid::from_vec(flattened, cols.unwrap()))
 }
 
 // vec to tuple ///////////////////////////////////////////////////////////////
@@ -178,7 +75,7 @@ pub enum VecParseError {
     },
 }
 
-pub struct VecParse<'a>(pub Vec<&'a str>);
+pub struct VecParse<T>(pub Vec<T>);
 
 macro_rules! args_to_tuple {
     ($name:ident) => {
@@ -191,13 +88,13 @@ macro_rules! args_to_tuple {
 
 macro_rules! vec_parse_impls {
     ($($name:ident $ename:ident)+) => {
-        impl<'a, $($name, $ename),+> TryFrom<VecParse<'a>> for args_to_tuple!($($name)+)
+        impl<'a, $($name, $ename),+> TryFrom<VecParse<&'a str>> for args_to_tuple!($($name)+)
         where $($name: FromStr<Err = $ename>),+ ,
               $($ename: std::error::Error + Send + Sync + 'static),+
         {
             type Error = VecParseError;
             #[allow(unused_assignments, non_snake_case)]
-            fn try_from(value: VecParse<'a>) -> Result<Self, Self::Error> {
+            fn try_from(value: VecParse<&'a str>) -> Result<Self, Self::Error> {
                 let mut i = 0;
                 $(
                     if i >= value.0.len() {

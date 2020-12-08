@@ -1,4 +1,3 @@
-use crate::parsers as P;
 use anyhow;
 
 fn bs(lr: &[u8], upchar: u8, mut lb: u32, mut ub: u32) -> u32 {
@@ -25,13 +24,12 @@ fn seat_id(bsp: &str) -> u32 {
 }
 
 pub fn part1(input: &str) -> anyhow::Result<String> {
-    let seat_ids = P::map_lines_safe(input, seat_id)?;
-    let m = seat_ids.iter().max();
+    let m = input.lines().map(seat_id).max();
     Ok(m.unwrap().to_string())
 }
 
 pub fn part2(input: &str) -> anyhow::Result<String> {
-    let mut seat_ids = P::map_lines_safe(input, seat_id)?;
+    let mut seat_ids = input.lines().map(seat_id).collect::<Vec<_>>();
     seat_ids.sort_unstable();
 
     for i in 0..seat_ids.len() - 1 {
