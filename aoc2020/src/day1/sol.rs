@@ -1,5 +1,3 @@
-use anyhow;
-
 pub fn part1(input: &str) -> anyhow::Result<String> {
     let numbers: Vec<i32> = input.lines().map(|x| x.parse()).collect::<Result<_, _>>()?;
 

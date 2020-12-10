@@ -1,4 +1,3 @@
-use anyhow;
 use std::collections::HashMap;
 
 fn add_sums(xmas: &[u64], sums: &mut HashMap<u64, usize>, i: usize, j: usize) {
@@ -64,13 +63,10 @@ pub fn part2(input: &str) -> anyhow::Result<String> {
     let cum = cumsum(&xmas);
     for i in 0..cum.len() {
         let tofind = target + cum[i];
-        match cum.binary_search(&tofind) {
-            Ok(j) => {
-                let weakness = xmas[i + 1..=j].into_iter().min().unwrap()
-                    + xmas[i + 1..=j].into_iter().max().unwrap();
-                return Ok(weakness.to_string());
-            }
-            Err(_) => (),
+        if let Ok(j) = cum.binary_search(&tofind) {
+            let weakness =
+                xmas[i + 1..=j].iter().min().unwrap() + xmas[i + 1..=j].iter().max().unwrap();
+            return Ok(weakness.to_string());
         }
     }
 

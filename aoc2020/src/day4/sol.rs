@@ -1,12 +1,11 @@
 use crate::parsers as P;
-use anyhow;
 use std::collections::HashMap;
 
 fn hashmapify<'a>(record: &'a str) -> HashMap<&'a str, &'a str> {
     record
         .split_whitespace()
         .map(|kv| {
-            kv.find(":")
+            kv.find(':')
                 .map(|i| {
                     let (k, v) = kv.split_at(i);
                     (k, &v[1..])
@@ -54,7 +53,7 @@ pub fn part2(input: &str) -> anyhow::Result<String> {
             let hcl = {
                 let h = r.get("hcl").unwrap();
                 h.len() == 7
-                    && h.starts_with("#")
+                    && h.starts_with('#')
                     && h.chars().skip(1).all(|c| c.is_ascii_alphanumeric())
             };
 

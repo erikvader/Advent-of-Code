@@ -1,5 +1,3 @@
-use anyhow;
-
 #[derive(Debug)]
 enum EndState<T> {
     Looping(T),
@@ -7,7 +5,7 @@ enum EndState<T> {
     Error,
 }
 
-fn execute(program: &Vec<(&str, i32)>) -> EndState<i32> {
+fn execute(program: &[(&str, i32)]) -> EndState<i32> {
     let mut acc = 0;
     let mut pc: i32 = 0;
     let mut visited: Vec<bool> = program.iter().map(|_| false).collect();
@@ -39,7 +37,7 @@ fn read_prog(input: &str) -> Vec<(&str, i32)> {
     input
         .lines()
         .map(|ins| {
-            let mut parts = ins.split(" ");
+            let mut parts = ins.split(' ');
             // TODO: don't just expect these
             let opcode = parts.next().expect("no opcode");
             let int = parts
@@ -57,7 +55,7 @@ pub fn part1(input: &str) -> anyhow::Result<String> {
     let program = read_prog(input);
     let state = execute(&program);
     if let EndState::Looping(acc) = state {
-        return Ok(acc.to_string());
+        Ok(acc.to_string())
     } else {
         anyhow::bail!("comput0r is not looping");
     }

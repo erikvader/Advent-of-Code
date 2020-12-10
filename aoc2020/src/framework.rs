@@ -151,7 +151,7 @@ pub fn find_src_dir(cwd: &Path) -> anyhow::Result<PathBuf> {
     let mut proj_root = can
         .ancestors()
         .find(|a| a.is_dir() && a.file_name().map_or(false, |f| f == cargo_name))
-        .ok_or(anyhow::anyhow!("couldn't find project root"))?
+        .ok_or_else(|| anyhow::anyhow!("couldn't find project root"))?
         .to_path_buf();
 
     proj_root.push("src");

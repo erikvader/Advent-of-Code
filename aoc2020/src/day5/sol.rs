@@ -1,5 +1,3 @@
-use anyhow;
-
 fn bs(lr: &[u8], upchar: u8, mut lb: u32, mut ub: u32) -> u32 {
     for &x in lr.iter().take(lr.len() - 1) {
         let mid = lb + (ub - lb) / 2;
@@ -18,8 +16,8 @@ fn bs(lr: &[u8], upchar: u8, mut lb: u32, mut ub: u32) -> u32 {
 }
 
 fn seat_id(bsp: &str) -> u32 {
-    let row = bs(&bsp.as_bytes()[..7], 'B' as u8, 0, 127);
-    let col = bs(&bsp.as_bytes()[7..], 'R' as u8, 0, 7);
+    let row = bs(&bsp.as_bytes()[..7], b'B', 0, 127);
+    let col = bs(&bsp.as_bytes()[7..], b'R', 0, 7);
     row * 8 + col
 }
 

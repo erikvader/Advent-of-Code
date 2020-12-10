@@ -5,21 +5,18 @@ use std::convert::TryFrom;
 use std::iter::Iterator;
 use std::str::FromStr;
 
-pub fn paragraphs<'a>(s: &'a str) -> impl Iterator<Item = &'a str> {
+pub fn paragraphs(s: &str) -> impl Iterator<Item = &str> {
     s.trim_end().split("\n\n")
 }
 
 pub fn regex_capture<'a>(input: &'a str, regex: &Regex) -> Vec<Option<&'a str>> {
-    regex.captures(input).map_or_else(
-        || Vec::new(),
-        |groupiter| {
-            groupiter
-                .iter()
-                .skip(1)
-                .map(|optmat| optmat.map(|mat| mat.as_str()))
-                .collect::<Vec<Option<&'a str>>>()
-        },
-    )
+    regex.captures(input).map_or_else(Vec::new, |groupiter| {
+        groupiter
+            .iter()
+            .skip(1)
+            .map(|optmat| optmat.map(|mat| mat.as_str()))
+            .collect::<Vec<Option<&'a str>>>()
+    })
 }
 
 pub fn regex_capture_require<'a>(input: &'a str, regex: &Regex) -> Vec<&'a str> {

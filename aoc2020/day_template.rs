@@ -1,5 +1,4 @@
 use crate::parsers as P;
-use anyhow;
 
 pub fn part1(input: &str) -> anyhow::Result<String> {
     Ok("part 1 is not implemented".to_string())

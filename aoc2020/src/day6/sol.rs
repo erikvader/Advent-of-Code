@@ -1,5 +1,4 @@
 use crate::parsers as P;
-use anyhow;
 use std::collections::{HashMap, HashSet};
 
 pub fn part1(input: &str) -> anyhow::Result<String> {

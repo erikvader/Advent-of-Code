@@ -1,4 +1,3 @@
-use anyhow;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
@@ -40,7 +39,7 @@ fn parse_tree(input: &str) -> anyhow::Result<HashMap<String, Vec<(u32, String)>>
                     Some(Vec::new())
                 } else {
                     outerbag[2]
-                        .split(",")
+                        .split(',')
                         .map(|d| {
                             depsreg.captures(d).map(|deps| {
                                 (
