@@ -123,7 +123,7 @@ pub fn execute_test_cases(solver: AOCPart, part: Part, dir: &Path) -> anyhow::Re
         let ans = resans.context("solver error")?;
 
         println!("{}: {}", "Answer".yellow(), ans);
-        println!("{}: {} ms", "Execution time".blue(), t.as_millis());
+        pretty_print_dur(t);
 
         if let Some(p) = solution {
             let sol = fs::read_to_string(&p).context("couldn't read solution file")?;
@@ -165,6 +165,17 @@ where
 {
     let prev = Instant::now();
     let res = f();
-    let dur = Instant::now().duration_since(prev);
+    let dur = prev.elapsed();
     (res, dur)
+}
+
+fn pretty_print_dur(d: Duration) {
+    print!("{}: ", "Execution time".blue());
+    if d.as_millis() > 0 {
+        println!("{} ms", d.as_millis());
+    } else if d.as_micros() > 0 {
+        println!("{} μs", d.as_micros());
+    } else {
+        println!("{} ns", d.as_nanos());
+    }
 }
