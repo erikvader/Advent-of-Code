@@ -24,6 +24,7 @@ aoc_import! {
     mod day9;
     mod day10;
     mod day11;
+    mod day12;
     //<day-marker>
 }
 
