@@ -1,6 +1,6 @@
 (in-package :aoc)
 
-(defun parse-line (f)
+(defun each-line (f)
   (lambda (lines)
     (mapcar f lines)))
 
