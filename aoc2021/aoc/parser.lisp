@@ -1,5 +1,9 @@
 (in-package :aoc)
 
+(defun parse-line (f)
+  (lambda (lines)
+    (mapcar f lines)))
+
 (defmacro regex (&rest string-or-cons)
   "Cool macro"
   (let ((regex-string (->> string-or-cons
