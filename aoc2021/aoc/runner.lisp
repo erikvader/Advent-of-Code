@@ -8,6 +8,7 @@
      res))
 
 (defun run-day (part &key (input-file "./input") expected-answer (parser #'identity))
+  (format t "~&Running ~s...~%" part)
   (let* ((input (uiop:read-file-lines input-file))
          parse-time
          (parsed-input (real-time parse-time
@@ -15,7 +16,7 @@
          solution-time
          (solution (real-time solution-time
                      (funcall part parsed-input))))
-    (format t "~&Answer: ~a~%" solution)
+    (format t "Answer: ~s~%" solution)
     (when expected-answer
       (format t "The answer is~a correct~%" (if (equal solution expected-answer) "" " not")))
     (format t "It took ~6$ seconds to parse the input~%" parse-time)

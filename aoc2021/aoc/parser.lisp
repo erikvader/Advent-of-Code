@@ -4,7 +4,7 @@
   (lambda (lines)
     (mapcar f lines)))
 
-(defmacro regex (&rest string-or-cons)
+(defmacro regex (return-type &rest string-or-cons)
   "Cool macro"
   (let ((regex-string (->> string-or-cons
                            (mapcan (lambda (sc)
@@ -13,18 +13,21 @@
                                          (list sc))))
                            (apply #'concatenate 'string)))
         (parsers (->> string-or-cons
-                      (remove-if (complement #'consp))
-                      (mapcar #'cdr))))
-    `(regex-parse ,regex-string ,@parsers)))
+                      (remove-if-not #'consp)
+                      (mapcar #'cdr)
+                      (mapcar (lambda (s) (if (symbolp s)
+                                              `(function ,s)
+                                              s))))))
+    `(regex-parse ,regex-string (list ,@parsers) :return-type ,return-type)))
 
-(defun regex-parse (regex &rest parsers)
+(defun regex-parse (regex parsers &key (return-type 'vector))
   "Run regex on line and return all capture groups parsed by their respective function
 from PARSERS. A value of nil in PARSERS is the same as #'identity. The length of PARSERS
 must be the same as the number of capture groups in REGEX."
   (let ((ptrn (ppcre:create-scanner regex)))
     (lambda (line)
       (when-let (groups (nth-value 1 (ppcre:scan-to-strings ptrn line)))
-        (map 'vector
+        (map return-type
              (lambda (g p)
                (funcall (or p #'identity) g))
              groups
