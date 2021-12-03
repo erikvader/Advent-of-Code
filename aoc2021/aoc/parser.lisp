@@ -105,3 +105,9 @@ starts."
   (lambda (line)
     (cons (subseq line 0 index)
           (subseq line index))))
+
+(defun bitvector (line)
+  (map '(vector bit) #'digit-char-p line))
+
+(defun numbervector (line)
+  (map 'vector #'digit-char-p line))

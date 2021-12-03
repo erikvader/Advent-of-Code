@@ -14,5 +14,7 @@
            :words
            :collect-alist
            :collect-hash-table
-           :split-at))
+           :split-at
+           :bitvector
+           :numbervector))
 (in-package :aoc)
