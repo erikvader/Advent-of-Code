@@ -1,9 +1,9 @@
 (in-package :aoc)
 
 (defmacro real-time (place &body body)
-  `(let* ((now (get-internal-real-time))
+  `(let* ((now (get-internal-run-time))
           (res (progn ,@body))
-          (elapsed (- (get-internal-real-time) now)))
+          (elapsed (- (get-internal-run-time) now)))
      (setf ,place (/ elapsed internal-time-units-per-second))
      res))
 
