@@ -7,6 +7,7 @@
                "arrows"     ;; ->
                "cl-ppcre"   ;; regex
                "trivia"     ;; pattern matching
+               "monotonic-clock" ;; better performance clock
                )
   :serial t
   :components ((:file "aoc")

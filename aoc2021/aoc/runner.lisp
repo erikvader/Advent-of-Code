@@ -1,14 +1,15 @@
 (in-package :aoc)
 
 (defmacro real-time (place &body body)
-  `(let* ((now (get-internal-run-time))
+  `(let* ((now (monotonic-now :raw))
           (res (progn ,@body))
-          (elapsed (- (get-internal-run-time) now)))
-     (setf ,place (/ elapsed internal-time-units-per-second))
+          (elapsed (- (monotonic-now :raw) now)))
+     (setf ,place (/ elapsed (monotonic-time-units-per-second)))
      res))
 
 (defun run-day (part &key (input-file "./input") expected-answer (parser #'identity))
   (format t "~&Running ~s...~%" part)
+  (sb-ext:gc :full t)
   (let* ((input (uiop:read-file-lines input-file))
          parse-time
          (parsed-input (real-time parse-time
