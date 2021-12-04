@@ -16,5 +16,8 @@
            :collect-hash-table
            :split-at
            :bitvector
-           :numbervector))
+           :numbervector
+           :boll
+           :header
+           :integer-grid))
 (in-package :aoc)

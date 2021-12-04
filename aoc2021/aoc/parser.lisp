@@ -4,6 +4,10 @@
   (lambda (lines)
     (mapcar f lines)))
 
+(defun words (line)
+  (delete-if #'uiop:emptyp
+             (uiop:split-string line :separator " ")))
+
 (defmacro regex (return-type &rest string-or-cons)
   "Cool macro"
   (let ((regex-string (->> string-or-cons
@@ -55,6 +59,22 @@ must be the same as the number of capture groups in REGEX."
                    do (setf (aref array h w) c)))
     array))
 
+(defun integer-grid (lines)
+  "Parses a grid of integers into a matrix. Each column is separated by one or more
+  spaces and each row is one a separate line."
+  (let* ((height (length lines))
+         (width (-> (car lines)
+                    (words)
+                    (length)))
+         (array (make-array (list height width))))
+    (loop for l in lines
+          for h from 0
+          do (loop for word in (words l)
+                   for int = (parse-integer word)
+                   for w from 0
+                   do (setf (aref array h w) int)))
+    array))
+
 (defun group-by-reverse (to-group split-here-p)
   "Finds non-empty groups delimited by items where SPLIT-HERE-P is non-nil."
   (labels ((f (elements groups group)
@@ -79,8 +99,16 @@ must be the same as the number of capture groups in REGEX."
 (defun commas (line)
   (uiop:split-string line :separator ","))
 
-(defun words (line)
-  (uiop:split-string line :separator " "))
+(defun boll (&rest funcs)
+  (apply #'alexandria:compose funcs))
+
+(defun header (car-parser cdr-parser)
+  "Parses the first line with `car-parser' and the rest with `cdr-parser'. The return
+  value is a list. The first parser receives a single line and the other receives a list
+  of lines."
+  (lambda (lines)
+    (cons (funcall car-parser (car lines))
+          (funcall cdr-parser (cdr lines)))))
 
 (defun to-lines (line-or-lines)
   (if (stringp line-or-lines)
