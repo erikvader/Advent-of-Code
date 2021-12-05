@@ -10,18 +10,23 @@
 
 (defmacro regex (return-type &rest string-or-cons)
   "Cool macro"
-  (let ((regex-string (->> string-or-cons
-                           (mapcan (lambda (sc)
-                                     (if (consp sc)
-                                         (list "(" (car sc) ")")
-                                         (list sc))))
-                           (apply #'concatenate 'string)))
-        (parsers (->> string-or-cons
-                      (remove-if-not #'consp)
-                      (mapcar #'cdr)
-                      (mapcar (lambda (s) (if (symbolp s)
-                                              `(function ,s)
-                                              s))))))
+  (let* ((expanded (->> string-or-cons
+                        (mapcar (lambda (x)
+                                  (case x
+                                    (number '("[0-9]+" . #'parse-integer))
+                                    (t x))))))
+         (regex-string (->> expanded
+                            (mapcan (lambda (sc)
+                                      (if (consp sc)
+                                          (list "(" (car sc) ")")
+                                          (list sc))))
+                            (apply #'concatenate 'string)))
+         (parsers (->> expanded
+                       (remove-if-not #'consp)
+                       (mapcar #'cdr)
+                       (mapcar (lambda (s) (if (symbolp s)
+                                               `(function ,s)
+                                               s))))))
     `(regex-parse ,regex-string (list ,@parsers) :return-type ,return-type)))
 
 (defun regex-parse (regex parsers &key (return-type 'vector))
