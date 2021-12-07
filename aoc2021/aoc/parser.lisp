@@ -1,8 +1,10 @@
 (in-package :aoc)
 
-(defun each-line (f)
+(defun each-line (f &key (type 'list))
+  "Returns a function that parses each line with F. The desired return type, e.g., list or
+vector, is specified with TYPE."
   (lambda (lines)
-    (mapcar f lines)))
+    (map type f lines)))
 
 (defun words (line)
   (delete-if #'uiop:emptyp
@@ -144,3 +146,8 @@ starts."
 
 (defun numbervector (line)
   (map 'vector #'digit-char-p line))
+
+(defun single-line-numbers (&key (type 'list))
+  "Returns a function (lambda (lines) ...) which will parse the first line as a comma
+separated list of integers."
+  (aoc:boll (aoc:each-line #'parse-integer :type type) #'aoc:commas #'car))

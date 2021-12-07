@@ -20,5 +20,6 @@
            :numbervector
            :boll
            :header
+           :single-line-numbers
            :integer-grid))
 (in-package :aoc)

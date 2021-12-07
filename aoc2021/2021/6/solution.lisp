@@ -28,7 +28,7 @@
 (defun part2 (numbers)
   (calc-fishes numbers 256))
 
-(defparameter *parser* (aoc:boll (aoc:each-line #'parse-integer) #'aoc:commas #'car))
+(defparameter *parser* (aoc:single-line-numbers))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 379114)
 
