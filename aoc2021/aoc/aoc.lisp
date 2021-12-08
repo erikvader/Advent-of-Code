@@ -21,5 +21,7 @@
            :boll
            :header
            :single-line-numbers
+           :map-cons
+           :split-sep
            :integer-grid))
 (in-package :aoc)

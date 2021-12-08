@@ -141,6 +141,17 @@ starts."
     (cons (subseq line 0 index)
           (subseq line index))))
 
+(defun split-sep (sep)
+  (lambda (line)
+    (when-let ((x (search sep line)))
+      (cons (subseq line 0 x)
+            (subseq line (+ x (length sep)))))))
+
+(defun map-cons (left right)
+  (lambda (con)
+    (cons (funcall left (car con))
+          (funcall right (cdr con)))))
+
 (defun bitvector (line)
   (map '(vector bit) #'digit-char-p line))
 
@@ -150,4 +161,4 @@ starts."
 (defun single-line-numbers (&key (type 'list))
   "Returns a function (lambda (lines) ...) which will parse the first line as a comma
 separated list of integers."
-  (aoc:boll (aoc:each-line #'parse-integer :type type) #'aoc:commas #'car))
+  (boll (each-line #'parse-integer :type type) #'commas #'car))
