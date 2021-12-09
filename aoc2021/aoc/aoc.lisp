@@ -23,5 +23,6 @@
            :single-line-numbers
            :map-cons
            :split-sep
-           :integer-grid))
+           :integer-grid
+           :integer-grid-tight))
 (in-package :aoc)

@@ -68,7 +68,7 @@ must be the same as the number of capture groups in REGEX."
 
 (defun integer-grid (lines)
   "Parses a grid of integers into a matrix. Each column is separated by one or more
-  spaces and each row is one a separate line."
+  spaces and each row is on a separate line."
   (let* ((height (length lines))
          (width (-> (car lines)
                     (words)
@@ -78,6 +78,20 @@ must be the same as the number of capture groups in REGEX."
           for h from 0
           do (loop for word in (words l)
                    for int = (parse-integer word)
+                   for w from 0
+                   do (setf (aref array h w) int)))
+    array))
+
+(defun integer-grid-tight (lines)
+  "Parses a grid of integers into a matrix. Each column is one character wide and each row
+is on a separate line."
+  (let* ((height (length lines))
+         (width (length (car lines)))
+         (array (make-array (list height width))))
+    (loop for l in lines
+          for h from 0
+          do (loop for c across l
+                   for int = (digit-char-p c)
                    for w from 0
                    do (setf (aref array h w) int)))
     array))
