@@ -23,6 +23,7 @@
            :single-line-numbers
            :map-cons
            :split-sep
+           :chars
            :integer-grid
            :integer-grid-tight))
 (in-package :aoc)

@@ -111,7 +111,7 @@ is on a separate line."
     (f to-group nil nil)))
 
 (defun group-by (to-group split-here-p)
-  (mapcar #'reverse (reverse (group-by-reverse to-group split-here-p))))
+  (mapcar #'nreverse (nreverse (group-by-reverse to-group split-here-p))))
 
 (defun paragraphs (lines)
   "Groups lines into paragraphs"
@@ -171,6 +171,10 @@ starts."
 
 (defun numbervector (line)
   (map 'vector #'digit-char-p line))
+
+(defun chars (&optional (type 'list))
+  (lambda (line)
+    (coerce line type)))
 
 (defun single-line-numbers (&key (type 'list))
   "Returns a function (lambda (lines) ...) which will parse the first line as a comma
