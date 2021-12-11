@@ -1,5 +1,5 @@
-(ql:quickload "aoc")
-(rename-package :alexandria :alexandria '(:a))
+(ql:quickload "aoc" :silent t)
+(sb-ext:add-package-local-nickname :a :alexandria)
 
 (defun most-common (bits tie-breaker)
   (loop with ones = (make-array (length (car bits)) :initial-element 0)
@@ -44,7 +44,7 @@
     (* (parse-integer (map 'string #'digit-char oxygen) :radix 2)
        (parse-integer (map 'string #'digit-char koldioxid) :radix 2))))
 
-(defparameter *parser* (aoc:each-line #'aoc:numbervector))
+(defparameter *parser* (aoc:each-line 'list (aoc:numbervector)))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 749376)
 

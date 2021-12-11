@@ -1,4 +1,4 @@
-(ql:quickload "aoc")
+(ql:quickload "aoc" :silent t)
 (import 'arrows:->>)
 (import 'arrows:->)
 

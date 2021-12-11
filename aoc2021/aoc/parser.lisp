@@ -1,14 +1,48 @@
 (in-package :aoc)
 
-(defun each-line (f &key (type 'list))
-  "Returns a function that parses each line with F. The desired return type, e.g., list or
+(defmacro defun-curry (name args &body body)
+  "`defun' a function with currying. ARGS does not support &optional, &rest or &key, only
+simple arguments are allowed."
+  (let ((body-fun (gensym))
+        (optional-args (mapcar (lambda (x)
+                                 (list x nil (gensym)))
+                               args))
+        (docstring "")
+        (actual-body body))
+    (when (stringp (car body))
+      (setf docstring (car body)
+            actual-body (cdr body)))
+
+    `(defun ,name (&optional ,@optional-args) ,docstring
+       (flet ((,body-fun ,args ,@actual-body))
+         ,(if (null args)
+              `(,body-fun)
+              `(cond
+                 (,(nth 2 (car (last optional-args))) (,body-fun ,@args))
+                 ,@(maplist (lambda (xs)
+                              `(,(nth 2 (car xs)) (curry #',name
+                                                         ,@(nreverse (mapcar #'car xs)))))
+                            (cdr (reverse optional-args)))
+                 (t #',name)))))))
+
+(defmacro defcurry (fundef)
+  "Wrapper around a `defun' which replaces `defun' with `defun-curry'. Handy cuz it
+doesn't need any extra modification/settings to have proper syntax highlighting
+appropriate for a `defun'."
+  ;; Evaluate the following to make slime and emacs indent this macro more nicely:
+  ;;   (function-put 'defcurry 'common-lisp-indent-function '(&body))
+  `(defun-curry ,@(cdr fundef)))
+
+(defcurry
+  (defun each-line (type f lines)
+    "Returns a function that parses each line with F. The desired return type, e.g., list or
 vector, is specified with TYPE."
-  (lambda (lines)
     (map type f lines)))
 
-(defun words (line)
-  (delete-if #'uiop:emptyp
-             (uiop:split-string line :separator " ")))
+(defcurry
+  (defun words (line)
+    (delete-if #'uiop:emptyp
+               (uiop:split-string line :separator " "))))
 
 (defmacro regex (return-type &rest string-or-cons)
   "Cool macro"
@@ -54,45 +88,49 @@ must be the same as the number of capture groups in REGEX."
           when x
             return (values x i))))
 
-(defun char-grid (lines)
-  "Parses all lines into a matrix of characters"
-  (let* ((height (length lines))
-         (width (length (car lines)))
-         (array (make-array (list height width))))
-    (loop for l in lines
-          for h from 0
-          do (loop for c across l
-                   for w from 0
-                   do (setf (aref array h w) c)))
-    array))
+(defcurry
+  (defun char-grid (lines)
+    "Parses all lines into a matrix of characters"
+    (let* ((height (length lines))
+           (width (length (car lines)))
+           (array (make-array (list height width))))
+      (loop for l in lines
+            for h from 0
+            do (loop for c across l
+                     for w from 0
+                     do (setf (aref array h w) c)))
+      array)))
 
-(defun integer-grid (lines)
-  "Parses a grid of integers into a matrix. Each column is separated by one or more
+(defcurry
+  (defun integer-grid (lines)
+    "Parses a grid of integers into a matrix. Each column is separated by one or more
   spaces and each row is on a separate line."
-  (let* ((height (length lines))
-         (width (-> (car lines)
-                    (words)
-                    (length)))
-         (array (make-array (list height width))))
-    (loop for l in lines
-          for h from 0
-          do (loop for word in (words l)
-                   for int = (parse-integer word)
-                   for w from 0
-                   do (setf (aref array h w) int)))
-    array))
+    (let* ((height (length lines))
+           (width (-> (car lines)
+                      (words)
+                      (length)))
+           (array (make-array (list height width))))
+      (loop for l in lines
+            for h from 0
+            do (loop for word in (words l)
+                     for int = (parse-integer word)
+                     for w from 0
+                     do (setf (aref array h w) int)))
+      array)))
 
-(defun grid-map (f grid)
-  (let ((view (make-array (reduce #'* (array-dimensions grid))
-                          :displaced-to grid)))
-    (map-into view f view)
-    grid))
+(defcurry
+  (defun grid-map (f grid)
+    (let ((view (make-array (reduce #'* (array-dimensions grid))
+                            :displaced-to grid)))
+      (map-into view f view)
+      grid)))
 
-(defun integer-grid-tight (lines)
-  "Parses a grid of integers into a matrix. Each column is one character wide and each row
+(defcurry
+  (defun integer-grid-tight (lines)
+    "Parses a grid of integers into a matrix. Each column is one character wide and each row
 is on a separate line."
-  (->> (char-grid lines)
-       (grid-map #'digit-char-p)))
+    (->> (char-grid lines)
+         (grid-map #'digit-char-p))))
 
 (defun group-by-reverse (to-group split-here-p)
   "Finds non-empty groups delimited by items where SPLIT-HERE-P is non-nil."
@@ -111,21 +149,23 @@ is on a separate line."
 (defun group-by (to-group split-here-p)
   (mapcar #'nreverse (nreverse (group-by-reverse to-group split-here-p))))
 
-(defun paragraphs (lines)
-  "Groups lines into paragraphs"
-  (group-by lines (lambda (s) (string= s ""))))
+(defcurry
+  (defun paragraphs (lines)
+    "Groups lines into paragraphs"
+    (group-by lines (lambda (s) (string= s "")))))
 
-(defun commas (line)
-  (uiop:split-string line :separator ","))
+(defcurry
+  (defun commas (line)
+    (uiop:split-string line :separator ",")))
 
 (defun boll (&rest funcs)
   (apply #'alexandria:compose funcs))
 
-(defun header (car-parser cdr-parser)
-  "Parses the first line with `car-parser' and the rest with `cdr-parser'. The return
+(defcurry
+  (defun header (car-parser cdr-parser lines)
+    "Parses the first line with `car-parser' and the rest with `cdr-parser'. The return
   value is a list. The first parser receives a single line and the other receives a list
   of lines."
-  (lambda (lines)
     (cons (funcall car-parser (car lines))
           (funcall cdr-parser (cdr lines)))))
 
@@ -134,47 +174,54 @@ is on a separate line."
       (list line-or-lines)
       line-or-lines))
 
-(defun collect-alist (line-or-lines)
-  "Finds whitespace-separated words on the form 'k:v' and collects them into an alist"
-  (let ((lines (to-lines line-or-lines)))
-    (loop for l in lines
-          nconc (loop for w in (words l)
-                      for kv = (uiop:split-string w :separator ":" :max 2)
-                      collect (cons (car kv) (cadr kv))))))
+(defcurry
+  (defun collect-alist (line-or-lines)
+    "Finds whitespace-separated words on the form 'k:v' and collects them into an alist"
+    (let ((lines (to-lines line-or-lines)))
+      (loop for l in lines
+            nconc (loop for w in (words l)
+                        for kv = (uiop:split-string w :separator ":" :max 2)
+                        collect (cons (car kv) (cadr kv)))))))
 
-(defun collect-hash-table (line-or-lines)
-  (alexandria:alist-hash-table (collect-alist line-or-lines)
-                               :test 'equal))
+(defcurry
+  (defun collect-hash-table (line-or-lines)
+    (alexandria:alist-hash-table (collect-alist line-or-lines)
+                                 :test 'equal)))
 
-(defun split-at (index)
-  "Split the line at the given index into two parts. INDEX is where the second string
+(defcurry
+  (defun split-at (index line)
+    "Split the line at the given index into two parts. INDEX is where the second string
 starts."
-  (lambda (line)
     (cons (subseq line 0 index)
           (subseq line index))))
 
-(defun split-sep (sep)
-  (lambda (line)
+(defcurry
+  (defun split-sep (sep line)
     (when-let ((x (search sep line)))
       (cons (subseq line 0 x)
             (subseq line (+ x (length sep)))))))
 
-(defun map-cons (left right)
-  (lambda (con)
+(defcurry
+  (defun map-cons (left right con)
     (cons (funcall left (car con))
           (funcall right (cdr con)))))
 
-(defun bitvector (line)
-  (map '(vector bit) #'digit-char-p line))
+(defcurry
+  (defun bitvector (line)
+    (map '(vector bit) #'digit-char-p line)))
 
-(defun numbervector (line)
-  (map 'vector #'digit-char-p line))
+(defcurry
+  (defun numbervector (line)
+    (map 'vector #'digit-char-p line)))
 
-(defun chars (&optional (type 'list))
-  (lambda (line)
+(defcurry
+  (defun chars (type line)
     (coerce line type)))
 
-(defun single-line-numbers (&key (type 'list))
-  "Returns a function (lambda (lines) ...) which will parse the first line as a comma
-separated list of integers."
-  (boll (each-line #'parse-integer :type type) #'commas #'car))
+(defcurry
+  (defun single-line-numbers (type lines)
+    "Parse the first line as a comma separated list of integers."
+    (->> lines
+         (car)
+         (commas)
+         (map type #'parse-integer))))

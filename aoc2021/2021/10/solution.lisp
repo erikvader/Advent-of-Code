@@ -1,4 +1,4 @@
-(ql:quickload "aoc")
+(ql:quickload "aoc" :silent t)
 
 (defun the-other (opening)
   (ecase opening
@@ -57,7 +57,7 @@
         finally (return (nth (floor (length scores) 2)
                              (sort scores #'<)))))
 
-(defparameter *parser* (aoc:each-line (aoc:chars)))
+(defparameter *parser* (aoc:each-line 'list (aoc:chars 'list)))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 288291)
 

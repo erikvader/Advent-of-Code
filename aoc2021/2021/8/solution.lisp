@@ -1,4 +1,4 @@
-(ql:quickload "aoc")
+(ql:quickload "aoc" :silent t)
 (import 'alexandria:curry)
 (import 'arrows:->>)
 (import 'arrows:->)
@@ -87,7 +87,8 @@
         for trans = (find-translation (car i))
         sum (apply #'decode-display trans (cdr i))))
 
-(defparameter *parser* (aoc:each-line (aoc:boll
+(defparameter *parser* (aoc:each-line 'list
+                                      (aoc:boll
                                        (aoc:map-cons #'aoc:words #'aoc:words)
                                        (aoc:split-sep " | "))))
 (aoc:run-day #'part1 :parser *parser*

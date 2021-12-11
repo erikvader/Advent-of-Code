@@ -1,4 +1,4 @@
-(ql:quickload "aoc")
+(ql:quickload "aoc" :silent t)
 
 (defun flash (energy pos flashed)
   (unless (gethash pos flashed)

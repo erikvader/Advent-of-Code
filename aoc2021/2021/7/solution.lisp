@@ -1,4 +1,4 @@
-(ql:quickload "aoc")
+(ql:quickload "aoc" :silent t)
 (import 'arrows:->)
 
 (defun part1 (numbers)
@@ -43,7 +43,7 @@
                      min-fuel fuel)
           finally (return min-fuel))))
 
-(defparameter *parser* (aoc:single-line-numbers :type 'vector))
+(defparameter *parser* (aoc:single-line-numbers 'vector))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 335271)
 

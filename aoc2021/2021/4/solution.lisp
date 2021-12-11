@@ -1,5 +1,5 @@
-(ql:quickload "aoc")
-(rename-package :alexandria :alexandria '(:a))
+(ql:quickload "aoc" :silent t)
+(sb-ext:add-package-local-nickname :a :alexandria)
 
 (defstruct bingo
   inverse-grid
@@ -60,9 +60,9 @@
                          until (is-victor-p b)
                          finally (return (* c (sum-unmarked b)))))))
 
-(defparameter *parser* (aoc:header (aoc:boll (aoc:each-line #'parse-integer)
+(defparameter *parser* (aoc:header (aoc:boll (aoc:each-line 'list #'parse-integer)
                                              #'aoc:commas)
-                                   (aoc:boll (aoc:each-line #'aoc:integer-grid)
+                                   (aoc:boll (aoc:each-line 'list #'aoc:integer-grid)
                                              #'aoc:paragraphs)))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 34506)

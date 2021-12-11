@@ -1,4 +1,4 @@
-(ql:quickload "aoc")
+(ql:quickload "aoc" :silent t)
 
 (defun shift-left (vec newvalue)
   (let ((first (aref vec 0)))
@@ -28,7 +28,7 @@
 (defun part2 (numbers)
   (calc-fishes numbers 256))
 
-(defparameter *parser* (aoc:single-line-numbers))
+(defparameter *parser* (aoc:single-line-numbers 'list))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 379114)
 
