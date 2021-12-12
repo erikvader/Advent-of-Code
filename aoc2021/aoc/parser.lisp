@@ -25,13 +25,14 @@ simple arguments are allowed."
                             (cdr (reverse optional-args)))
                  (t #',name)))))))
 
-(defmacro defcurry (fundef)
+(defmacro defcurry (&body fundef)
   "Wrapper around a `defun' which replaces `defun' with `defun-curry'. Handy cuz it
 doesn't need any extra modification/settings to have proper syntax highlighting
-appropriate for a `defun'."
-  ;; Evaluate the following to make slime and emacs indent this macro more nicely:
-  ;;   (function-put 'defcurry 'common-lisp-indent-function '(&body))
-  `(defun-curry ,@(cdr fundef)))
+appropriate for a `defun'.
+
+The &body is there to make Slime/Emacs indent everything with few spaces. If it
+doesn't, evaluate: (function-put 'defcurry 'common-lisp-indent-function '(&body))"
+  `(defun-curry ,@(cdar fundef)))
 
 (defcurry
   (defun each-line (type f lines)
