@@ -7,7 +7,7 @@
      (setf ,place (/ elapsed (monotonic-time-units-per-second)))
      res))
 
-(defun run-day (part &key (input-file "./input") expected-answer (parser #'identity))
+(defun run-day (part &key (input-file "./input") expected-answer (parser #'identity) unpack)
   (format t "~&Running ~s...~%" part)
   (sb-ext:gc :full t)
   (let* ((input (uiop:read-file-lines input-file))
@@ -16,7 +16,11 @@
                          (funcall parser input)))
          solution-time
          (solution (real-time solution-time
-                     (funcall part parsed-input))))
+                     (funcall (if unpack
+                                  #'apply
+                                  #'funcall)
+                              part
+                              parsed-input))))
     (format t "Answer: ~s~%" solution)
     (when expected-answer
       (format t "The answer is~a correct~%" (if (equal solution expected-answer) "" " not")))

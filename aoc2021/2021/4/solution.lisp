@@ -60,10 +60,10 @@
                          until (is-victor-p b)
                          finally (return (* c (sum-unmarked b)))))))
 
-(defparameter *parser* (aoc:header (aoc:boll (aoc:each-line 'list #'parse-integer)
-                                             #'aoc:commas)
-                                   (aoc:boll (aoc:each-line 'list #'aoc:integer-grid)
-                                             #'aoc:paragraphs)))
+(defparameter *parser* (aoc:map-cons (aoc:boll (aoc:each-line 'list #'parse-integer)
+                                               #'aoc:commas)
+                                     (aoc:boll (aoc:each-line 'list #'aoc:integer-grid)
+                                               #'aoc:paragraphs)))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 34506)
 

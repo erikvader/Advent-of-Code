@@ -51,6 +51,7 @@ vector, is specified with TYPE."
                         (mapcar (lambda (x)
                                   (case x
                                     (number '("[0-9]+" . #'parse-integer))
+                                    (char '("[a-zA-Z]" . (rcurry #'aref 0)))
                                     (t x))))))
          (regex-string (->> expanded
                             (mapcan (lambda (sc)
@@ -69,15 +70,28 @@ vector, is specified with TYPE."
 (defun regex-parse (regex parsers &key (return-type 'vector))
   "Run regex on line and return all capture groups parsed by their respective function
 from PARSERS. A value of nil in PARSERS is the same as #'identity. The length of PARSERS
-must be the same as the number of capture groups in REGEX."
-  (let ((ptrn (ppcre:create-scanner regex)))
+must be the same as the number of capture groups in REGEX.
+
+RETURN-TYPE is a valid argument to the function MAP, or the special value PAIR. If it is
+:PAIR, then exactly two capture groups are expected and their parsed values are returned in
+a cons."
+  (assert (or (not (eq return-type :pair))
+              (= (length parsers) 2))
+          nil
+          "There must be exactly two capture groups if RETURN-TYPE is :pair")
+  (let ((ptrn (ppcre:create-scanner regex))
+        (map-type (or (when (eq :pair return-type) 'list)
+                      return-type)))
     (lambda (line)
-      (when-let (groups (nth-value 1 (ppcre:scan-to-strings ptrn line)))
-        (map return-type
-             (lambda (g p)
-               (funcall (or p #'identity) g))
-             groups
-             parsers)))))
+      (when-let* ((groups (nth-value 1 (ppcre:scan-to-strings ptrn line)))
+                  (res (map map-type
+                            (lambda (g p)
+                              (funcall (or p #'identity) g))
+                            groups
+                            parsers)))
+        (when (eq return-type :pair)
+          (setf (cdr res) (cadr res)))
+        res))))
 
 (defun branch (&rest parsers)
   "Runs each parser in sequence and returns the result and the index of the first
@@ -164,11 +178,15 @@ is on a separate line."
 
 (defcurry
   (defun header (car-parser cdr-parser lines)
-    "Parses the first line with `car-parser' and the rest with `cdr-parser'. The return
-  value is a list. The first parser receives a single line and the other receives a list
-  of lines."
+    "Applies car-parser to the first element of lines and cdr-parser to the rest."
     (cons (funcall car-parser (car lines))
-          (funcall cdr-parser (cdr lines)))))
+          (mapcar cdr-parser (cdr lines)))))
+
+(defcurry
+  (defun map-cons (left right con)
+    "Maps both values of a cons-cell."
+    (cons (funcall left (car con))
+          (funcall (or right left) (cdr con)))))
 
 (defun to-lines (line-or-lines)
   (if (stringp line-or-lines)
@@ -201,11 +219,6 @@ starts."
     (when-let ((x (search sep line)))
       (cons (subseq line 0 x)
             (subseq line (+ x (length sep)))))))
-
-(defcurry
-  (defun map-cons (left right con)
-    (cons (funcall left (car con))
-          (funcall right (cdr con)))))
 
 (defcurry
   (defun bitvector (line)
