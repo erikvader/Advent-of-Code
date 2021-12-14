@@ -7,6 +7,9 @@
      (setf ,place (/ elapsed (monotonic-time-units-per-second)))
      res))
 
+(defun apply-cons (f con)
+  (funcall f (car con) (cdr con)))
+
 (defun run-day (part &key (input-file "./input") expected-answer (parser #'identity) unpack)
   (format t "~&Running ~s...~%" part)
   (sb-ext:gc :full t)
@@ -16,9 +19,10 @@
                          (funcall parser input)))
          solution-time
          (solution (real-time solution-time
-                     (funcall (if unpack
-                                  #'apply
-                                  #'funcall)
+                     (funcall (ecase unpack
+                                (:cons #'apply-cons)
+                                ((nil) #'funcall)
+                                ((t :list) #'apply))
                               part
                               parsed-input))))
     (format t "Answer: ~s~%" solution)

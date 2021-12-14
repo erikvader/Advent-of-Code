@@ -46,8 +46,8 @@
                            #\Space)))
           (terpri))))
 
-(defparameter *parser* (aoc:boll (aoc:header (aoc:each-line 'list (aoc:regex :pair number "," number))
-                                             (aoc:each-line 'list (aoc:regex :pair "fold along " char "=" number)))
+(defparameter *parser* (aoc:boll (aoc:header (aoc:each-line 'list (aoc:regex :pair :number "," :number))
+                                             (aoc:each-line 'list (aoc:regex :pair "fold along " :char "=" :number)))
                                  (aoc:paragraphs)))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 759

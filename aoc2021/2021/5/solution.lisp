@@ -47,7 +47,7 @@
         do (fill-grid grid line)
         finally (return (overlapping-points grid))))
 
-(defparameter *parser* (aoc::each-line 'list (aoc:regex '(vector * 4) number "," number " -> " number "," number)))
+(defparameter *parser* (aoc::each-line 'list (aoc:regex '(vector * 4) :number "," :number " -> " :number "," :number)))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 6007)
 

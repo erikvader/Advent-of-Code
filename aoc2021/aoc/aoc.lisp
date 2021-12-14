@@ -24,6 +24,7 @@
            :map-cons
            :split-sep
            :chars
+           :trim
            :integer-grid
            :integer-grid-tight))
 (in-package :aoc)

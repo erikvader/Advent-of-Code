@@ -41,6 +41,11 @@ vector, is specified with TYPE."
     (map type f lines)))
 
 (defcurry
+  (defun trim (lines)
+    "Filter out empty lines"
+    (remove-if #'uiop:emptyp lines)))
+
+(defcurry
   (defun words (line)
     (delete-if #'uiop:emptyp
                (uiop:split-string line :separator " "))))
@@ -50,8 +55,11 @@ vector, is specified with TYPE."
   (let* ((expanded (->> string-or-cons
                         (mapcar (lambda (x)
                                   (case x
-                                    (number '("[0-9]+" . #'parse-integer))
-                                    (char '("[a-zA-Z]" . (rcurry #'aref 0)))
+                                    (:number '("[0-9]+" . #'parse-integer))
+                                    (:char '("[a-zA-Z]" . (rcurry #'aref 0)))
+                                    (:dchar '("[a-zA-Z][a-zA-Z]" . (lambda (cs)
+                                                                     (cons (aref cs 0)
+                                                                           (aref cs 1)))))
                                     (t x))))))
          (regex-string (->> expanded
                             (mapcan (lambda (sc)
@@ -203,9 +211,8 @@ is on a separate line."
                         collect (cons (car kv) (cadr kv)))))))
 
 (defcurry
-  (defun collect-hash-table (line-or-lines)
-    (alexandria:alist-hash-table (collect-alist line-or-lines)
-                                 :test 'equal)))
+  (defun collect-hash-table (conses)
+    (alexandria:alist-hash-table conses :test 'equal)))
 
 (defcurry
   (defun split-at (index line)
