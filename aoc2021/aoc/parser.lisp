@@ -56,6 +56,7 @@ vector, is specified with TYPE."
                         (mapcar (lambda (x)
                                   (case x
                                     (:number '("[0-9]+" . #'parse-integer))
+                                    (:inumber '("-?[0-9]+" . #'parse-integer))
                                     (:char '("[a-zA-Z]" . (rcurry #'aref 0)))
                                     (:dchar '("[a-zA-Z][a-zA-Z]" . (lambda (cs)
                                                                      (cons (aref cs 0)
