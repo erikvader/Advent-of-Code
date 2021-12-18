@@ -25,6 +25,7 @@
            :split-sep
            :chars
            :trim
+           :to-plist
            :integer-grid
            :integer-grid-tight))
 (in-package :aoc)

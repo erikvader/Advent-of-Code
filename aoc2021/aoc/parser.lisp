@@ -247,3 +247,11 @@ starts."
          (car)
          (commas)
          (map type #'parse-integer))))
+
+(defun interleave (list &rest more-lists)
+  "Returns a flat list with the elements from all lists in order."
+  (apply #'nconc (apply #'mapcar #'list list more-lists)))
+
+(defcurry
+  (defun to-plist (keys elements)
+    (interleave keys elements)))

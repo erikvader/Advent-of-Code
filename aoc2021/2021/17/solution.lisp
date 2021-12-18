@@ -2,14 +2,14 @@
 (use-package :iterate)
 
 (defun inside-square-p (square point)
-  (not (or (> (car point) (second square))
-           (< (car point) (first square))
-           (> (cdr point) (fourth square))
-           (< (cdr point) (third square)))))
+  (not (or (> (car point) (getf square :x2))
+           (< (car point) (getf square :x1))
+           (> (cdr point) (getf square :y2))
+           (< (cdr point) (getf square :y1)))))
 
 (defun outside-p (square point)
-  (or (> (car point) (second square))
-      (< (cdr point) (third square))))
+  (or (> (car point) (getf square :x2))
+      (< (cdr point) (getf square :y1))))
 
 (defun hits-square-p (square velx vely)
   (iter (with x = 0)
@@ -28,7 +28,7 @@
               (* 2 dt)))))
 
 (defun part1 (square)
-  (iter (with velx = (floor (get-v0 (second square))))
+  (iter (with velx = (floor (get-v0 (getf square :x2))))
         (for vely from 1 to 300)
         (when (hits-square-p square velx vely)
           (maximize (floor (* vely (1+ vely)) 2)))))
@@ -38,7 +38,8 @@
         (iter (for vely from -100 to 400)
               (in outer (count (hits-square-p square velx vely))))))
 
-(defparameter *parser* (aoc:boll (aoc:regex 'list "target area: x=" :inumber "\.\." :inumber ", y=" :inumber "\.\." :inumber)
+(defparameter *parser* (aoc:boll (aoc:to-plist '(:x1 :x2 :y1 :y2))
+                                 (aoc:regex 'list "target area: x=" :inumber "\.\." :inumber ", y=" :inumber "\.\." :inumber)
                                  #'car))
 (aoc:run-day #'part1 :parser *parser*
                      :expected-answer 4186)
