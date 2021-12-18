@@ -255,3 +255,12 @@ starts."
 (defcurry
   (defun to-plist (keys elements)
     (interleave keys elements)))
+
+(defcurry
+  (defun parse-conses (left-paren right-paren period line)
+    "Parses a line that looks like conses, but with different characters."
+    (-<> line
+     (ppcre:regex-replace-all (ppcre:quote-meta-chars left-paren) <> "(")
+     (ppcre:regex-replace-all (ppcre:quote-meta-chars right-paren) <> ")")
+     (ppcre:regex-replace-all (ppcre:quote-meta-chars period) <> " . ")
+     (read-from-string))))

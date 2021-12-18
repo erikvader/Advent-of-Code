@@ -26,6 +26,7 @@
            :chars
            :trim
            :to-plist
+           :parse-conses
            :integer-grid
            :integer-grid-tight))
 (in-package :aoc)
