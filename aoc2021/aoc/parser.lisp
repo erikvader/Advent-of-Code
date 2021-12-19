@@ -84,13 +84,16 @@ must be the same as the number of capture groups in REGEX.
 RETURN-TYPE is a valid argument to the function MAP, or the special value PAIR. If it is
 :PAIR, then exactly two capture groups are expected and their parsed values are returned in
 a cons."
-  (assert (or (not (eq return-type :pair))
-              (= (length parsers) 2))
+  (assert (and (or (not (eq return-type :pair))
+                   (= (length parsers) 2))
+               (or (not (eq return-type :single))
+                   (= (length parsers) 1)))
           nil
-          "There must be exactly two capture groups if RETURN-TYPE is :pair")
+          "There must be exactly two capture groups if RETURN-TYPE is :pair and one if :single")
   (let ((ptrn (ppcre:create-scanner regex))
-        (map-type (or (when (eq :pair return-type) 'list)
-                      return-type)))
+        (map-type (case return-type
+                    ((:pair :single) 'list)
+                    (t return-type))))
     (lambda (line)
       (when-let* ((groups (nth-value 1 (ppcre:scan-to-strings ptrn line)))
                   (res (map map-type
@@ -98,9 +101,10 @@ a cons."
                               (funcall (or p #'identity) g))
                             groups
                             parsers)))
-        (when (eq return-type :pair)
-          (setf (cdr res) (cadr res)))
-        res))))
+        (case return-type
+          (:pair (cons (car res) (cadr res)))
+          (:single (car res))
+          (t res))))))
 
 (defun branch (&rest parsers)
   "Runs each parser in sequence and returns the result and the index of the first
@@ -245,6 +249,12 @@ starts."
     "Parse the first line as a comma separated list of integers."
     (->> lines
          (car)
+         (commas-numbers type))))
+
+(defcurry
+  (defun commas-numbers (type line)
+    "Parse the line as a comma separated list of integers."
+    (->> line
          (commas)
          (map type #'parse-integer))))
 
