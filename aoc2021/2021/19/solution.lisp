@@ -25,7 +25,18 @@
 (defun merge-scanners-rot (scan0 scan1)
   ;; https://stackoverflow.com/a/58471362 rotate scan1 24 times and run `merge-scanners'
   ;; on each, returning on the first one that succeeds
-  )
+  (iter outer (for ri below 6)
+        ;;TODO: map-into?
+        (setq scan1 (mapcar #'roll scan1))
+        (when-let (x (merge-scanners scan0 scan1))
+          (return-from outer x))
+        (iter (for ti below 3)
+              (setq scan1 (mapcar (if (evenp ri)
+                                      #'rotatecw
+                                      #'rotateccw)
+                                  scan1))
+              (when-let (x (merge-scanners scan0 scan1))
+                (return-from outer x)))))
 
 (defun merge-scanners (scan0 scan1)
   (iter outer (with s0points = (let ((ht (make-hash-table :size (length scan0) :test 'equal)))
@@ -47,15 +58,15 @@
                                   (finally (return (cons common others))))))
                 ;; (format t "s1 at ~s~%" s1pos)
                 ;; (format t "they got ~s points in common ~%~%" (car pairs))
-                (when (>= (car pairs) 12)
+                (when (>= (car pairs) 0)
                   ;TODO: input is nice enough to always give us exactly 12?
                   (in outer (finding (cdr pairs) maximizing (car pairs) into beacons)))))
         (finally (return-from outer (and beacons
                                          (nconc beacons scan0))))))
 
 (defun part1 (scanners)
-  (merge-scanners (cdr (first scanners))
-                  (cdr (second scanners))))
+  (merge-scanners-rot (cdr (first scanners))
+                      (cdr (second scanners))))
 
 (defun part2 (numbers)
   )
@@ -65,7 +76,8 @@
                                                             (aoc:commas-numbers 'vector)))
                                  (aoc:paragraphs)))
 (aoc:run-day #'part1 :parser *parser*
-                     :expected-answer 3793)
+                     :expected-answer 3793
+                     :input-file "./example")
 
-(aoc:run-day #'part2 :parser *parser*
-                     :expected-answer 4695)
+;; (aoc:run-day #'part2 :parser *parser*
+;;                      :expected-answer 4695)
