@@ -1,10 +1,10 @@
 (in-package :aoc)
 
 (defmacro real-time (place &body body)
-  `(let* ((now (monotonic-now :raw))
+  `(let* ((now (osicat:get-monotonic-time)) ;; is not the raw one :(
           (res (progn ,@body))
-          (elapsed (- (monotonic-now :raw) now)))
-     (setf ,place (/ elapsed (monotonic-time-units-per-second)))
+          (elapsed (- (osicat:get-monotonic-time) now)))
+     (setf ,place elapsed)
      res))
 
 (defun apply-cons (f con)

@@ -7,8 +7,7 @@
                "arrows"     ;; ->
                "cl-ppcre"   ;; regex
                "trivia"     ;; pattern matching
-               "monotonic-clock" ;; better performance clock, not available on quicklisp :(
-                                 ;; https://github.com/death/monotonic-clock
+               "osicat"     ;; monotonic clock etc
                "iterate"    ;; nicer loop
                )
   :serial t

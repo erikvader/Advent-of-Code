@@ -1,7 +1,6 @@
 (defpackage :aoc
   (:use :cl :alexandria :arrows :iterate)
   (:import-from :trivia :match*)
-  (:import-from :monotonic-clock :monotonic-time-units-per-second :monotonic-now)
   ;; (:local-nicknames (:t :trivia))
   (:export :run-day
            :run-day-stdout
