@@ -2,7 +2,7 @@
 
 set -e
 
-[[ -f ./aoc.core ]] || sbcl --eval '(ql:quickload "aoc")' --eval '(sb-ext:save-lisp-and-die "./aoc.core")'
+[[ -f ./aoc.core ]] || sbcl --load init.lisp --eval '(ql:quickload "aoc")' --eval '(sb-ext:save-lisp-and-die "./aoc.core")'
 while IFS='' read -r line; do
     (
         cd "$(dirname "$line")" || exit 1
