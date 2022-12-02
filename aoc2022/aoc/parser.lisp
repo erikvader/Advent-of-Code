@@ -242,7 +242,19 @@ starts."
 
 (defcurry
   (defun chars (type line)
+    "Convert a line into a list or vector of characters."
+    (assert (member type '(list vector)))
     (coerce line type)))
+
+(defcurry
+  (defun to-char (line)
+    "Converts a line of a single character to that character."
+    (coerce line 'character)))
+
+(defcurry
+  (defun index-of (sequence line)
+    "Returns the index of where line is in sequence"
+    (position line sequence :test #'equal)))
 
 (defcurry
   (defun single-line-numbers (type lines)

@@ -23,6 +23,8 @@
            :map-cons
            :split-sep
            :chars
+           :to-char
+           :index-of
            :trim
            :to-plist
            :parse-conses
