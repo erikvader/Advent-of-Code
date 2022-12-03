@@ -11,3 +11,5 @@ while IFS='' read -r line; do
         echo
     )
 done < <(find . -type f -name solution.lisp | sort -V)
+
+rm ./aoc.core
