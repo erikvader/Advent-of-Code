@@ -175,12 +175,21 @@ is on a separate line."
     (f to-group nil nil)))
 
 (defun group-by (to-group split-here-p)
+  "Same as `group-by-reverse' but preserves the order."
   (mapcar #'nreverse (nreverse (group-by-reverse to-group split-here-p))))
 
 (defcurry
   (defun paragraphs (lines)
     "Groups lines into paragraphs"
-    (group-by lines (lambda (s) (string= s "")))))
+    (group-by lines #'uiop:emptyp)))
+
+(defcurry
+  (defun group-size (size lines)
+    "Groups LINES into groups of size SIZE. The length of LINES must be a multiple of
+SIZE."
+    (iter (for tail on lines by (lambda (xs)
+                                  (subseq xs size)))
+          (collect (subseq tail 0 size)))))
 
 (defcurry
   (defun commas (line)
@@ -228,9 +237,15 @@ starts."
 
 (defcurry
   (defun split-sep (sep line)
+    "Splits a line at a separator, the separator is not included in any half."
     (when-let ((x (search sep line)))
       (cons (subseq line 0 x)
             (subseq line (+ x (length sep)))))))
+
+(defcurry
+  (defun split-half (line)
+    "Splits a line in half"
+    (split-at (floor (length line) 2) line)))
 
 (defcurry
   (defun bitvector (line)

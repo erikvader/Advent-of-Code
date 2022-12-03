@@ -15,6 +15,8 @@
            :collect-alist
            :collect-hash-table
            :split-at
+           :split-half
+           :group-size
            :bitvector
            :numbervector
            :boll
