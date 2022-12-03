@@ -30,6 +30,7 @@
       (format t "The answer is~a correct~%" (if (equal solution expected-answer) "" " not")))
     (format t "It took ~6$ seconds to parse the input~%" parse-time)
     (format t "It took ~6$ seconds to find the answer~%" solution-time)
+    (format t "A whopping ~6$ seconds in total~%" (+ solution-time parse-time))
     solution))
 
 (defun capture-stdout (f)
