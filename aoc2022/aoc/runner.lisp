@@ -25,7 +25,8 @@
                                 ((t :list) #'apply))
                               part
                               parsed-input))))
-    (format t "Answer: ~s~%" solution)
+    (let ((*print-circle* t))
+      (format t "Answer: ~s~%" solution))
     (when expected-answer
       (format t "The answer is~a correct~%" (if (equal solution expected-answer) "" " not")))
     (format t "It took ~6$ seconds to parse the input~%" parse-time)
