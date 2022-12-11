@@ -313,3 +313,13 @@ starts."
      (ppcre:regex-replace-all (ppcre:quote-meta-chars right-paren) <> ")")
      (ppcre:regex-replace-all (ppcre:quote-meta-chars period) <> " . ")
      (read-from-string))))
+
+(defcurry
+  (defun lisp-read (lines)
+    "Reads a lisp object from LINES. Don't forget about the handy #. i.e. read-time
+evaluation."
+    ;TODO: is this open necessary?
+    (with-open-stream (s (->> lines
+                              (mapcar #'make-string-input-stream)
+                              (apply #'make-concatenated-stream)))
+      (read s))))

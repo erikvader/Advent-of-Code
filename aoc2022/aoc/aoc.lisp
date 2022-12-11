@@ -8,6 +8,7 @@
            :each-line
            :guard
            :line-equal
+           :lisp-read
            :regex
            :branch
            :char-grid
