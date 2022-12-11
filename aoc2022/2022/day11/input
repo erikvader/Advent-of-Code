@@ -1,0 +1,75 @@
+(
+ (
+  (:items . (63 57))
+  (:operation . #.(lambda (old) (* old 11)))
+  (:test . #.(lambda (item) (= 0 (mod item 7))))
+  (:test-divider . 7)
+  (:true . 6)
+  (:false . 2)
+  )
+
+ (
+  (:items . (82 66 87 78 77 92 83))
+  (:operation . #.(lambda (old) (+ old 1)))
+  (:test . #.(lambda (item) (= 0 (mod item 11))))
+  (:test-divider . 11)
+  (:true . 5)
+  (:false . 0)
+  )
+
+ (
+  (:items . (97 53 53 85 58 54))
+  (:operation . #.(lambda (old) (* old 7)))
+  (:test . #.(lambda (item) (= 0 (mod item 13))))
+  (:test-divider . 13)
+  (:true . 4)
+  (:false . 3)
+  )
+
+ (
+  (:items . (50))
+  (:operation . #.(lambda (old) (+ old 3)))
+  (:test . #.(lambda (item) (= 0 (mod item 3))))
+  (:test-divider . 3)
+  (:true . 1)
+  (:false . 7)
+  )
+
+ (
+  (:items . (64 69 52 65 73))
+  (:operation . #.(lambda (old) (+ old 6)))
+  (:test . #.(lambda (item) (= 0 (mod item 17))))
+  (:test-divider . 17)
+  (:true . 3)
+  (:false . 7)
+  )
+
+ (
+  (:items . (57 91 65))
+  (:operation . #.(lambda (old) (+ old 5)))
+  (:test . #.(lambda (item) (= 0 (mod item 2))))
+  (:test-divider . 2)
+  (:true . 0)
+  (:false . 6)
+  )
+
+ (
+  (:items . (67 91 84 78 60 69 99 83))
+  (:operation . #.(lambda (old) (* old old)))
+  (:test . #.(lambda (item) (= 0 (mod item 5))))
+  (:test-divider . 5)
+  (:true . 2)
+  (:false . 4)
+  )
+
+ (
+  (:items . (58 78 69 65))
+  (:operation . #.(lambda (old) (+ old 7)))
+  (:test . #.(lambda (item) (= 0 (mod item 19))))
+  (:test-divider . 19)
+  (:true . 5)
+  (:false . 1)
+
+  )
+
+ )
