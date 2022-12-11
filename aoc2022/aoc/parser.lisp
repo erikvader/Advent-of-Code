@@ -117,6 +117,18 @@ a cons."
             return (values x i))))
 
 (defcurry
+  (defun guard (pred line)
+    "Aborts a branch of `branch' if PRED returns non-nil when given LINE as its argument."
+    (unless (funcall pred line)
+      (error "Guard predicate ~s failed on line ~s" pred line))
+    line))
+
+(defcurry
+  (defun line-equal (test line)
+    "Curried version of `string='"
+    (string= test line)))
+
+(defcurry
   (defun char-grid (lines)
     "Parses all lines into a matrix of characters"
     (let* ((height (length lines))

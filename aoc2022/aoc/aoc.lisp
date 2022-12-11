@@ -6,6 +6,8 @@
            :run-day-stdout
            :capture-stdout
            :each-line
+           :guard
+           :line-equal
            :regex
            :branch
            :char-grid
