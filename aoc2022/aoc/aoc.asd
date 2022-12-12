@@ -9,6 +9,7 @@
                "trivia"     ;; pattern matching
                "osicat"     ;; monotonic clock etc
                "iterate"    ;; nicer loop
+               "queues"     ;; queues
                )
   :serial t
   :components ((:file "aoc")

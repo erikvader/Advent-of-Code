@@ -7,3 +7,5 @@
 (use-package :iterate)
 (use-package :arrows)
 (use-package :alexandria)
+(use-package :queues)
+(require :queues.simple-queue)
