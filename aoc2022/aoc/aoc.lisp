@@ -33,6 +33,7 @@
            :trim
            :to-plist
            :parse-conses
+           :parse-lists
            :commas-numbers
            :integer-grid
            :integer-grid-tight))

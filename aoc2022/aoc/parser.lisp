@@ -315,6 +315,16 @@ starts."
      (read-from-string))))
 
 (defcurry
+  (defun parse-lists (left-paren right-paren line)
+    "Parses a line that looks like lisp lists, but with different characters for the
+parens. Removes all commas."
+    (-<> line
+     (ppcre:regex-replace-all (ppcre:quote-meta-chars left-paren) <> "(")
+     (ppcre:regex-replace-all (ppcre:quote-meta-chars right-paren) <> ")")
+     (ppcre:regex-replace-all (ppcre:quote-meta-chars ",") <> " ")
+     (read-from-string))))
+
+(defcurry
   (defun lisp-read (lines)
     "Reads a lisp object from LINES. Don't forget about the handy #. i.e. read-time
 evaluation."
