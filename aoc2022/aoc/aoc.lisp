@@ -27,6 +27,7 @@
            :single-line-numbers
            :map-cons
            :split-sep
+           :split-sep-list
            :chars
            :to-char
            :index-of

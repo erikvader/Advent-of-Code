@@ -1,4 +1,3 @@
-;;TODO: search all parent directories for aoc/
 (pushnew (merge-pathnames "aoc/")
          asdf:*central-registry*
          :test #'equalp)

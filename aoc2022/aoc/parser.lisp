@@ -255,6 +255,10 @@ starts."
             (subseq line (+ x (length sep)))))))
 
 (defcurry
+  (defun split-sep-list (sep line)
+    (ppcre:split (ppcre:quote-meta-chars sep) line)))
+
+(defcurry
   (defun split-half (line)
     "Splits a line in half"
     (split-at (floor (length line) 2) line)))
